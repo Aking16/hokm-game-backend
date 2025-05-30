@@ -1,0 +1,46 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Build outputs (if any)
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# Optional npm cache directory
+.npm/
+
+# Debugging files
+*.local
+
+# PM2 process files
+pids/
+*.pid
+*.seed
+
+# Socket.io specific files
+*.sock
+
+# TypeScript build artifacts (if using TS)
+*.tsbuildinfo
