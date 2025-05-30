@@ -1,4 +1,6 @@
-export type Suit = '♠' | '♥' | '♦' | '♣';
+export type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades';
+
+export const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
 
 export interface Card {
   suit: Suit;
@@ -20,10 +22,9 @@ export interface Room {
 }
 
 export function createDeck(): Card[] {
-  const suits: Suit[] = ['♠', '♥', '♦', '♣'];
   const deck: Card[] = [];
 
-  for (const suit of suits) {
+  for (const suit of SUITS) {
     for (let rank = 2; rank <= 14; rank++) {
       deck.push({ suit, rank });
     }
