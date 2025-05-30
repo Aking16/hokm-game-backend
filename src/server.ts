@@ -1,82 +1,48 @@
 import express from 'express';
 import http from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
+import { HokmRoomManager } from './game/hokm-room';
+import { roomsRouter } from './routes/rooms';
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new SocketIOServer(server);
 
 const PORT = 3000;
+const roomManager = new HokmRoomManager(io);
 
-// Types
-interface Room {
-  players: string[];
-  gameState: any; // Replace with detailed game state later
-}
+io.on('connection', (socket) => {
+  console.log(`🔌 Player connected: ${socket.id}`);
 
-const rooms: Record<string, Room> = {};
-
-io.on('connection', (socket: Socket) => {
-  console.log(`Player connected: ${socket.id}`);
-
-  socket.on('create-room', (roomId: string) => {
-    if (rooms[roomId]) {
-      socket.emit('error', 'Room already exists');
-      return;
-    }
-
-    rooms[roomId] = {
-      players: [socket.id],
-      gameState: {} // Later: init deck, player hands, turn, etc.
-    };
-
+  socket.on('create-room', () => {
+    const roomId = roomManager.createRoom(socket.id);
     socket.join(roomId);
     socket.emit('room-created', roomId);
-    console.log(`Room ${roomId} created`);
   });
 
   socket.on('join-room', (roomId: string) => {
-    const room = rooms[roomId];
-    if (!room || room.players.length >= 4) {
-      socket.emit('error', 'Room full or not found');
-      return;
-    }
-
-    room.players.push(socket.id);
-    socket.join(roomId);
-    socket.emit('room-joined', roomId);
-    io.to(roomId).emit('player-joined', socket.id);
-
-    if (room.players.length === 4) {
-      io.to(roomId).emit('start-game', room.players);
-      // Later: shuffle & deal cards
-    }
+    const success = roomManager.joinRoom(roomId, socket);
+    if (!success) socket.emit('error', 'Unable to join room');
   });
 
-  socket.on('play-card', ({ roomId, card }: { roomId: string; card: string; }) => {
-    console.log(`Card played in ${roomId} by ${socket.id}: ${card}`);
-    io.to(roomId).emit('card-played', { player: socket.id, card });
-    // TODO: Validate turn, manage game state
+  socket.on('play-card', (data) => {
+    roomManager.handlePlayCard(socket.id, data);
   });
 
   socket.on('disconnect', () => {
-    console.log(`Player disconnected: ${socket.id}`);
-    for (const roomId in rooms) {
-      const room = rooms[roomId];
-      const index = room.players.indexOf(socket.id);
-      if (index !== -1) {
-        room.players.splice(index, 1);
-        io.to(roomId).emit('player-left', socket.id);
-        if (room.players.length === 0) {
-          delete rooms[roomId];
-          console.log(`Room ${roomId} deleted`);
-        }
-        break;
-      }
-    }
+    roomManager.handleDisconnect(socket.id);
   });
 });
 
+// Middleware to give routes access to io (TS declaration shown below)
+app.use((req, res, next) => { (req as any).io = io; next(); });
+
+// JSON body parsing
+app.use(express.json());
+
+// Mount the rooms router under /api
+app.use('/api', roomsRouter);
+
 server.listen(PORT, () => {
-  console.log(`🚀 Hokm backend running at http://localhost:${PORT}`);
+  console.log(`🚀 Hokm server running at http://localhost:${PORT}`);
 });
