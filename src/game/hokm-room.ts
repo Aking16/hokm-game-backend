@@ -21,12 +21,12 @@ export class HokmRoomManager {
     return this.rooms.get(roomId);
   }
 
-  createRoom(creatorId: string): string {
+  createRoom(creatorId: string, playerName: string): string {
     const roomId = `room-${Math.random().toString(36).substr(2, 6)}`;
     const player: Player = {
       id: creatorId,
       team: 1,
-      name: ""
+      name: playerName
     };
     this.rooms.set(roomId, {
       id: roomId,
@@ -41,7 +41,7 @@ export class HokmRoomManager {
     return roomId;
   }
 
-  joinRoom(roomId: string, playerOrSocket: Socket | Player): boolean {
+  joinRoom(roomId: string, playerOrSocket: Socket | Player, playerName?: string): boolean {
     const room = this.rooms.get(roomId);
     if (!room || room.players.length >= 4 || room.gameStarted) return false;
 
@@ -55,7 +55,7 @@ export class HokmRoomManager {
       // It's a Socket object
       player = {
         id: playerOrSocket.id,
-        name: '',
+        name: playerName ?? "",
         team
       };
       playerOrSocket.join(roomId);

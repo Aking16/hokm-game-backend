@@ -17,7 +17,7 @@ interface CreateRoomBody { playerName: string; }
 roomsRouter.post('/', ((req: RequestWithIO, res: Response) => {
   const { playerName } = req.body as CreateRoomBody;
   const playerId = uuidv4();
-  const roomId = req.roomManager.createRoom(playerId);
+  const roomId = req.roomManager.createRoom(playerId, playerName);
 
   // Update player name after room creation
   const room = req.roomManager.getRoom(roomId);
