@@ -44,3 +44,4 @@ pids/
 
 # TypeScript build artifacts (if using TS)
 *.tsbuildinfo
+/src/generated/prisma

@@ -1,10 +1,11 @@
+import cors from 'cors';
 import express from 'express';
 import http from 'http';
-import cors from 'cors';
 import { Server as SocketIOServer } from 'socket.io';
 import { HokmRoomManager } from './game/hokm-room';
-import { roomsRouter } from './routes/rooms';
+import { authRouter } from './routes/auth';
 import { gameRouter } from './routes/game';
+import { roomsRouter } from './routes/rooms';
 
 const app = express();
 const server = http.createServer(app);
@@ -78,6 +79,7 @@ app.use(express.json());
 // Mount the rooms router under /api
 app.use('/api/room', roomsRouter);
 app.use('/api/game', gameRouter);
+app.use('/api/auth', authRouter);
 
 server.listen(PORT, () => {
   console.log(`🚀 Hokm server running at http://localhost:${PORT}`);
